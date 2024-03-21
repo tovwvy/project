@@ -1,0 +1,75 @@
+import random
+from kivy.app import App
+from kivy.uix.button import Button
+from kivy.uix.image import Image
+from kivy.uix.label import Label
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.screenmanager import Screen, ScreenManager
+from kivy.graphics import Color, Rectangle
+
+class MainScreen(Screen):
+    def __init__(self, name='main'):
+        super().__init__(name=name)
+        layout = BoxLayout(orientation='vertical')
+        buttons = ['Screen 1', 'Screen 2', 'Screen 3', 'Screen 4', 'Screen 5']
+        for btn_text in buttons:
+            btn = Button(text=btn_text)
+            btn.bind(on_press=self.next)
+            layout.add_widget(btn)
+        self.add_widget(layout)
+
+    def next(self, instance):
+        screen_name = instance.text.lower().replace(" ", "_")
+        self.manager.current = screen_name
+
+class SubScreen(Screen):
+    def __init__(self, name='sub', add_widgets=True):
+        super().__init__(name=name)
+        self.add_widgets = add_widgets
+        self.widgets = []
+        if add_widgets:
+            layout = BoxLayout(orientation='vertical')
+            heroes = self.get_unique_heroes(3)  # Get 3 unique heroes with descriptions
+            for hero_name, hero_description, hero_image_path, hero_icon_path, hero_color in heroes:
+                hero_label = Label(text=f'{hero_name} from Dota 2:\n{hero_description}', color=hero_color)
+                layout.add_widget(hero_label)
+                hero_image = Image(source=hero_image_path)
+                layout.add_widget(hero_image)
+                hero_icon = Image(source=hero_icon_path, size_hint=(None, None), size=(50, 50))
+                layout.add_widget(hero_icon)
+            btn = Button(text="Back to Main Menu")
+            btn.bind(on_press=self.go_to_main)
+            layout.add_widget(btn)
+            self.add_widget(layout)
+        else:
+            btn = Button(text="Back to Main Menu")
+            btn.bind(on_press=self.go_to_main)
+            self.add_widget(btn)
+
+    def go_to_main(self, instance):
+        self.manager.current = 'main'
+
+    def get_unique_heroes(self, count):
+        hero_info = [
+            ('Invoker', 'A ranged intelligence hero who is very difficult to master.', 'OIP.jpg', 'wp3009863.webp', (1, 0.647, 0, 1)),  # Orange color
+            ('Crystal Maiden', 'A support intelligence hero known for her powerful disabling spells.', 'OIP (1).jpg', 'wp3009863.webp', (0, 0, 1, 1)),  # Blue color
+            ('Anti-Mage', 'An agility carry hero who excels at rapidly farming gold.', 'OIP (2).jpg', 'wp3009863.webp', (0.502, 0, 0.502, 1)),  # Purple color
+            ('Drow Ranger', 'An agility carry hero who specializes in ranged physical damage.', 'wp3009863.webp', 'wp3009863.webp', (0, 1, 1, 1)),  # Cyan color
+            ('Shadow Fiend', 'A mid-lane agility hero with high burst damage potential.', 'R.jpg', 'wp3009863.webp', (1, 0, 0, 1))  # Red color
+        ]
+        unique_heroes = random.sample(hero_info, count)
+        return unique_heroes
+
+class MyApp(App):
+    def build(self):
+        sm = ScreenManager()
+        sm.add_widget(MainScreen())
+        for i in range(1, 6):
+            if i == 1 or i == 3:
+                sm.add_widget(SubScreen(name=f'screen_{i}'))
+            else:
+                sm.add_widget(SubScreen(name=f'screen_{i}', add_widgets=True))
+        return sm
+
+if __name__ == "__main__":
+    MyApp().run()
